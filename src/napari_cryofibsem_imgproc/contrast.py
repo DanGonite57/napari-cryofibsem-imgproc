@@ -28,7 +28,7 @@ def process_slice(slice_data, tile_row, tile_col, clip_limit):
 @magic_factory(
     call_button="Enhance contrast",
     image={"label": "Input Image"},
-    clip_limit={"label": "Clip Limit", "choices": ["0.005", "0.007", "0.008", "0.009", "0.01"]},
+    clip_limit={"label": "Clip Limit", "choices": ["0.005", "0.007", "0.008", "0.009", "0.010", "0.011", "0.012", "0.013", "0.014", "0.015"]},
     tile_row={"label": "Number of Rows"},
     tile_col={"label": "Number of Columns"}
 )
