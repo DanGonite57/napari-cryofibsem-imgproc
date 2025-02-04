@@ -1,10 +1,13 @@
-import cv2
-import numpy as np
-from napari.layers import Image
-import dask.array as da
 import concurrent.futures
+
+import cv2
+import dask.array as da
+import numpy as np
 from magicgui import magic_factory
+from napari.layers import Image
 from napari_plugin_engine import napari_hook_implementation
+
+from .utils import restore_original_type
 
 
 def f(lam, b):
@@ -15,7 +18,7 @@ def process_slice(slice_data, iteration, b):
     # Handles processing for Dask arrays
     if isinstance(slice_data, da.Array):
         slice_data = slice_data.compute()  # Converts Dask array into Numpy array
-        
+
     # Pads original image
     pad_width = 400
     img_pad = np.pad(slice_data, ((pad_width, pad_width), (pad_width, pad_width)), mode="reflect")
@@ -48,16 +51,8 @@ def process_slice(slice_data, iteration, b):
     # Removes padding
     img_unpad = img_norm[pad_width:pad_width + slice_data.shape[0], pad_width:pad_width + slice_data.shape[1]]
 
-    # Converts and normalizes range to original 8 or 16 bit unsigned integers
-    processed_slice_uint = None
-    if slice_data.dtype == "uint16":
-        processed_slice_uint = cv2.normalize(img_unpad, None, alpha=0, beta=65535, norm_type=cv2.NORM_MINMAX,
-                                             dtype=cv2.CV_16U)
-    elif slice_data.dtype == "uint8":
-        processed_slice_uint = cv2.normalize(img_unpad, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX,
-                                             dtype=cv2.CV_8U)
-
-    return processed_slice_uint
+    # Converts and normalizes range to original datatype
+    return restore_original_type(img_unpad, slice_data.dtype)
 
 
 @magic_factory(

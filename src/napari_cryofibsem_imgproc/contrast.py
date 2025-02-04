@@ -1,10 +1,12 @@
-import cv2
-import numpy as np
-from skimage.exposure import equalize_adapthist
-from napari.layers import Image
 import concurrent.futures
+
+import numpy as np
 from magicgui import magic_factory
+from napari.layers import Image
 from napari_plugin_engine import napari_hook_implementation
+from skimage.exposure import equalize_adapthist
+
+from .utils import restore_original_type
 
 
 def process_slice(slice_data, tile_row, tile_col, clip_limit):
@@ -13,16 +15,8 @@ def process_slice(slice_data, tile_row, tile_col, clip_limit):
                                    clip_limit=clip_limit,
                                    nbins=256)
 
-    # Converts and normalizes range to original 8 or 16 bit unsigned integers
-    processed_slice_uint = None
-    if slice_data.dtype == "uint16":
-        processed_slice_uint = cv2.normalize(img_clahe, None, alpha=0, beta=65535, norm_type=cv2.NORM_MINMAX,
-                                             dtype=cv2.CV_16U)
-    elif slice_data.dtype == "uint8":
-        processed_slice_uint = cv2.normalize(img_clahe, None, alpha=0, beta=255, norm_type=cv2.NORM_MINMAX,
-                                             dtype=cv2.CV_8U)
-
-    return processed_slice_uint
+    # Converts and normalizes range to original datatype
+    return restore_original_type(img_clahe, slice_data.dtype)
 
 
 @magic_factory(

@@ -1,10 +1,12 @@
-import cv2
-import numpy as np
-from napari.layers import Image
-import dask.array as da
 import concurrent.futures
+
+import dask.array as da
+import numpy as np
 from magicgui import magic_factory
+from napari.layers import Image
 from napari_plugin_engine import napari_hook_implementation
+
+from .utils import clip_to_dtype
 
 
 def process_slice(slice_data, central_tendency, average_intensity, datatype):
@@ -16,13 +18,7 @@ def process_slice(slice_data, central_tendency, average_intensity, datatype):
 
     ratio = average_intensity / current_intensity
 
-    slice_adjusted = None
-    if datatype == "uint16":
-        slice_adjusted = np.clip(slice_data * ratio, a_min=0, a_max=65535).astype(np.uint16)
-    elif datatype == "uint8":
-        slice_adjusted = np.clip(slice_data * ratio, a_min=0, a_max=255).astype(np.uint8)
-
-    return slice_adjusted
+    return clip_to_dtype(slice_data * ratio, datatype)
 
 
 @magic_factory(
@@ -63,11 +59,11 @@ def brightness(
         return
 
     stack_data = stack.data
-    
+
     if len(stack_data.shape) != 3:  # Checks if stack is 3D and not just a single image
         print(f"Number of dimensions in the image: {len(stack_data.shape)}. Please select a 3-dimensional stack.")
         return
-        
+
     is_dask = isinstance(stack_data, da.Array)
     datatype = stack_data.dtype
     average_intensity = None

@@ -24,10 +24,10 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
-    "numpy==1.26.4",
+    "numpy==2.0",
     "magicgui",
     "scikit-image==0.24.0",
-    "PyWavelets==1.6.0", 
+    "PyWavelets==1.6.0",
     "opencv-python==4.10.0.84"
 ]
 
